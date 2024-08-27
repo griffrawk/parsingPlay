@@ -43,14 +43,24 @@ print("\nParse using Parse\n")
 
 // this will parse a single line and return a User
 // needs the input: see the github issue above
-let user = Parse(input: Substring.self) {
-    Int.parser()            // $0
-    ","
-    Prefix { $0 != "," }    // $1
-    ","
-    Bool.parser()           // $2
+//let user = Parse(input: Substring.self) {
+//    Int.parser()            // $0
+//    ","
+//    Prefix { $0 != "," }    // $1
+//    ","
+//    Bool.parser()           // $2
+//}
+//.map { User(id: $0, name: String($1), isAdmin: $2) }
+
+//or
+let user = Parse(input: Substring.self, User.init(id:name:isAdmin:)) {
+  Int.parser()
+  ","
+  Prefix { $0 != "," }.map(String.init)
+  ","
+  Bool.parser()
 }
-.map { User(id: $0, name: String($1), isAdmin: $2) }
+
 
 // this parser processes many lines, expecting a user parser, as defined above
 // then a newline as separator
