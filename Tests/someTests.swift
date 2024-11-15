@@ -13,8 +13,8 @@ import Parsing
 class SomeTests: XCTestCase {
     var somedata: Int = 0
     
-    func testRunHello() {
-        print(testWithRange())
+    func testWithRange() {
+        print(withRangeExample())
     }
         
     func testParseUsingSplit() {
@@ -29,6 +29,10 @@ class SomeTests: XCTestCase {
         aocParse()
     }
     
+    func testOneOfExample() {
+        oneOfExample()
+    }
+
     override func setUp() {
         somedata = 999
 //        print("doing not much except setting up a var")
