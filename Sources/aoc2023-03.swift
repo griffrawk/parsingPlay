@@ -47,7 +47,9 @@ extension Parser where Input: Collection {
 
 func aocParse() {
     print("\nParse AoC input\n")
-
+    
+    var parsed: [Value] = []
+    
     let aocInput = """
         467..114..
         ...*......
@@ -92,9 +94,9 @@ func aocParse() {
                     }
                 // The potential part numbers
                 Int.parser().withRange().map { number, range in
-                    let number = String(number)
-                    let xRange = x(range)..<(number.count + x(range))
-                    return Value.Number(number, xRange: xRange, y: linecount)
+                    let partNumber = String(number)
+                    let xRange = x(range)..<(partNumber.count + x(range))
+                    return Value.Number(partNumber, xRange: xRange, y: linecount)
                 }
                 // The default, just "." left
                 First().map { _ in Value.Empty }
@@ -103,7 +105,7 @@ func aocParse() {
     }
 
     do {
-        let parsed = try parser.parse(aocInput)
+        parsed = try parser.parse(aocInput)
         print(parsed)
     } catch {
         print("\(error)")
