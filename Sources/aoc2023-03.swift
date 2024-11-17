@@ -62,14 +62,14 @@ func aocParse() {
         ...$.*....
         .664.598..
         """
-
+    
     var linecount = 0
     var nlat = 0
-
+    
     if let i = aocInput.firstIndex(of: "\n") {
         nlat = aocInput.distance(from: aocInput.startIndex, to: i) + 1
     }
-
+    
     // Calculate an x position relative to beginning of input or
     // the next char following \n (eg the next 'line')
     let x = { (range: Range<String.Index>) -> Int in
@@ -103,12 +103,32 @@ func aocParse() {
             }
         }
     }
-
+    
     do {
         parsed = try parser.parse(aocInput)
-        print(parsed)
     } catch {
         print("\(error)")
     }
+    
+    part2(parsed)
+}
 
+func part2(_ parsed: [Value]) {
+    
+    // A possible for part 2 (two part numbers adjacent to "*"):
+    // eg if by some other not-yet-written we've found "*" on line 4
+    // we could use the following to find .Number on lines 3...5 (inclusive)
+    // then we can range match to see if adjacent in x-axis
+    let symbols = parsed.filter {
+        switch $0 {
+        case .Number(_, _, 3...5) :
+            return true
+        default:
+            return false
+        }
+    }
+    for symb in symbols {
+        print(symb)
+    }
+    
 }
