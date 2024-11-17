@@ -8,15 +8,18 @@
 import Parsing
 
 enum Value {
-    case Number(number: String, xRange: Range<Int>, y: Int)
-    case Symbol(xRange: Range<Int>, y: Int)
+    // a multi-digit number
+    case Number(String, xRange: Range<Int>, y: Int)
+    // anything not a number and not ("\n" or ".")
+    case Symbol(String, xRange: Range<Int>, y: Int)
+    // "\n" or "."
     case Empty
 }
 
 extension Parser where Input: Collection {
     /**
     Returns the half-open range of the parsed output with the output
-     
+
     [](https://github.com/pointfreeco/swift-parsing/discussions/69)
     ```swift
     let parser = Int.parser().withRange()
@@ -60,40 +63,47 @@ func aocParse() {
 
     var linecount = 0
     var nlat = 0
-    
+
     if let i = aocInput.firstIndex(of: "\n") {
         nlat = aocInput.distance(from: aocInput.startIndex, to: i) + 1
     }
- 
-    let choice = OneOf {
-        "\n".withRange().map { _, range in
-            // inc everytime \n
-            linecount += 1
-            return Value.Empty
-        }
-        "*".withRange().map { _, range in
-            // Calculate an x offset relative to beginning of input or
-            // the next char following \n (eg the next 'line')
-            let x = aocInput.distance(from: aocInput.startIndex, to: range.lowerBound) - linecount * nlat
-            return Value.Symbol(xRange: x..<x+1, y: linecount)
-        }
-        Int.parser().withRange().map { number, range in
-            let number = String(number)
-            let x = aocInput.distance(from: aocInput.startIndex, to: range.lowerBound) - linecount * nlat
-            let xRange = x..<(number.count + x)
-            return Value.Number(number: number, xRange: xRange, y: linecount)
-        }
-        First().map { _ in Value.Empty }
-    }
 
-    let setParser = Parse(input: Substring.self) {
+    // Calculate an x position relative to beginning of input or
+    // the next char following \n (eg the next 'line')
+    let x = { (range: Range<String.Index>) -> Int in
+        aocInput.distance(
+            from: aocInput.startIndex, to: range.lowerBound)
+        - linecount * nlat
+    }
+    
+    let parser = Parse(input: Substring.self) {
         Many {
-            choice
+            OneOf {
+                // Count 'lines'. Inc everytime we see "\n"
+                "\n".withRange().map { _, range in
+                    linecount += 1
+                    return Value.Empty
+                }
+                // The symbols
+                Prefix(1) { !".0123456789".contains(String($0)) }
+                    .withRange().map { symbol, range in
+                        let xRange = x(range)..<x(range) + 1
+                        return Value.Symbol(String(symbol), xRange: xRange, y: linecount)
+                    }
+                // The potential part numbers
+                Int.parser().withRange().map { number, range in
+                    let number = String(number)
+                    let xRange = x(range)..<(number.count + x(range))
+                    return Value.Number(number, xRange: xRange, y: linecount)
+                }
+                // The default, just "." left
+                First().map { _ in Value.Empty }
+            }
         }
     }
 
     do {
-        let parsed = try setParser.parse(aocInput)
+        let parsed = try parser.parse(aocInput)
         print(parsed)
     } catch {
         print("\(error)")
